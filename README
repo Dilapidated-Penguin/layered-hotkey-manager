@@ -1,5 +1,7 @@
 # Keyboard layers
 This is a project written in ahk for the purpose of providing general hotkey and keyboard layering functionality.
+- Code for converting ahk map to and from json file format by teadrinker:
+https://www.autohotkey.com/boards/viewtopic.php?t=121553
 
 
     
