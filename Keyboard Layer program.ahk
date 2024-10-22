@@ -1,53 +1,7 @@
 ﻿#Requires AutoHotkey v2.0
-;Notation:
-    ;variable name starting with lowercase k => key
+#SingleInstance
+#Warn All, Off
 
-
-;Object instantiation:
-json := '
-(
-{
-    "group": [
-        {
-            "name": "example",
-            "data": [
-                {
-                    "one": 1,
-                    "two": 1,
-                    "three": 3,
-                    "four": 5
-                },
-                {
-                    "one": 7,
-                    "two": 1,
-                    "three": 13,
-                    "four": 52
-                }
-            ]
-        },
-        {
-            "name": "example 2",
-            "data": [
-                {
-                    "one": 1,
-                    "two": 1,
-                    "three": 3,
-                    "four": 5
-                },
-                {
-                    "one": 7,
-                    "two": 1,
-                    "three": 13,
-                    "four": 52
-                }
-            ]
-        }
-    ]
-}
-)'
-
-mapObj := LightJson.Parse(json)
-MsgBox LightJson.Stringify(mapObj, '    ')
 Class Key
 {
     __New(kOriginal,kHotKey,strType){
@@ -56,10 +10,11 @@ Class Key
         this.strType := strType
     }
 }
-Class Layer
+Class LayerInstance
 {
-    __New(kModifier, intLayerHeight,active := true){
+    __New(kModifier, intLayerHeight,name,active := true){
         this.kModifier := kModifier
+        this.name := name
         this.intLayerHeight := intLayerHeight
         this.HotkeyRelation := Map()
         this.Active := active
@@ -68,7 +23,8 @@ Class Layer
     }
 
     addHotKey(kOriginal,kHotKey,strType){
-        this.HotkeyRelation.Set([String(kOriginal),new Key(kOriginal,kHotKey,strType)])
+        KeyInst := Key(kOriginal,kHotKey,strType)
+        this.HotkeyRelation.Set(kOriginal, KeyInst)
     }
 
     rmHotKey(kOriginal){
@@ -76,6 +32,8 @@ Class Layer
     }
 }
 ;JSON parsing code
+;mapObj := LightJson.Parse(json)
+;MsgBox LightJson.Stringify(mapObj, '    ')
 class LightJson
 {
     static JS := LightJson.GetJS(), true := {}, false := {}, null := {}
@@ -110,11 +68,12 @@ class LightJson
 
             if IsObject(obj) {
                 isArray := Type(obj) = 'Array'
-                enumerable := Type(obj) = 'Object' ? obj.OwnProps() : obj
-                str := ''
-                for k, v in enumerable
-                    str .= (A_Index = 1 ? '' : ',') . (isArray ? '' : this.Stringify(k, true) . ':') . this.Stringify(v, true)
+                    enumerable := (Type(obj) = 'LayerInstance')||(Type(obj) = 'Object')||(Type(obj)='Key') ? obj.OwnProps() : obj
 
+                str := ''
+                for k, v in enumerable{
+                    str .= (A_Index = 1 ? '' : ',') . (isArray ? '' : this.Stringify(k, true) . ':') . this.Stringify(v, true)
+                }
                 return isArray ? '[' str ']' : '{' str '}'
             }
             if IsNumber(obj) && Type(obj) != 'String'
@@ -142,3 +101,19 @@ class LightJson
         return JS
     }
 }
+
+;Object instantiation:
+
+global layerInst := LayerInstance('^',3,'something',false)
+layerInst.addHotKey('d','k','tap-Hold')
+layerINst.addHotkey('a','z','typical')
+output := LightJson.Stringify(layerInst, '    ')
+outputDir := A_ScriptDir "\layers\"
+if(!DirExist(outputDir)){
+    DirCreate(outputDir)
+}
+outputDir .=  layerInst.name . ".json"
+if(FileExist(outputDir)){
+    FileDelete(outputDir)
+}
+FileAppend output, outputDir
