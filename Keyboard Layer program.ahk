@@ -2,28 +2,30 @@
 #SingleInstance
 #Warn All, Off
 
+
+global LayerDir := A_ScriptDir . "\layers\"
 Class Key
 {
-    __New(kOriginal,kHotKey,strType){
+    __New(kOriginal,kHotKey,objOptions){
         this.kOriginal := kOriginal
         this.kHotKey := kHotKey
-        this.strType := strType
+        this.options := objOptions
     }
 }
 Class LayerInstance
 {
-    __New(kModifier, intLayerHeight,name,active := true){
+    __New(kModifier,name,active := true){
         this.kModifier := kModifier
         this.name := name
-        this.intLayerHeight := intLayerHeight
         this.HotkeyRelation := Map()
         this.Active := active
         ;HotkeyRelation will in the form of a key-value pair,
         ;where the key is the original key and the value the new key
     }
 
-    addHotKey(kOriginal,kHotKey,strType){
-        KeyInst := Key(kOriginal,kHotKey,strType)
+    addHotKey(kOriginal,kHotKey,objOptions){
+        options := objOptions
+        KeyInst := Key(kOriginal,kHotKey,options)
         this.HotkeyRelation.Set(kOriginal, KeyInst)
     }
 
@@ -31,9 +33,7 @@ Class LayerInstance
         RemovedValue := this.HotkeyRelation.Delete(kOriginal)
     }
 }
-;JSON parsing code
-;mapObj := LightJson.Parse(json)
-;MsgBox LightJson.Stringify(mapObj, '    ')
+;JSON parsing code by
 class LightJson
 {
     static JS := LightJson.GetJS(), true := {}, false := {}, null := {}
@@ -68,7 +68,7 @@ class LightJson
 
             if IsObject(obj) {
                 isArray := Type(obj) = 'Array'
-                    enumerable := (Type(obj) = 'LayerInstance')||(Type(obj) = 'Object')||(Type(obj)='Key') ? obj.OwnProps() : obj
+                enumerable := (Type(obj) = 'LayerInstance')||(Type(obj) = 'Object')||(Type(obj)='Key') ? obj.OwnProps() : obj
 
                 str := ''
                 for k, v in enumerable{
@@ -102,18 +102,58 @@ class LightJson
     }
 }
 
-;Object instantiation:
+;Reading and writing to jsons
+readLayer(dir){
+    text := FileRead(dir)
+    return LightJson.parse(text,false)
+}
 
-global layerInst := LayerInstance('^',3,'something',false)
-layerInst.addHotKey('d','k','tap-Hold')
-layerINst.addHotkey('a','z','typical')
-output := LightJson.Stringify(layerInst, '    ')
-outputDir := A_ScriptDir "\layers\"
-if(!DirExist(outputDir)){
-    DirCreate(outputDir)
+writeLayer(LayerInput){
+    LightJson.Stringify(layerInst, '    ')
+    outputDir := LayerDir
+    if(!DirExist(outputDir)){
+        DirCreate(outputDir)
+    }
+    outputDir .=  layerInst.name . ".json"
+    if(FileExist(outputDir)){
+        FileDelete(outputDir)
+    }
+    FileAppend output, outputDir
 }
-outputDir .=  layerInst.name . ".json"
-if(FileExist(outputDir)){
-    FileDelete(outputDir)
+
+;Loop through folder and seetup the hotkeys based on if the layers are active
+;options format
+;{
+;   stacked_key := true false
+;   second_key := 'seperate key'
+;}
+
+Loop Files LayerDir {
+    currentLayer := readLayer(A_LoopFilePath)
+    if(currentLayer.Active){
+        for k,v in currentLayer.HotkeyRelation{
+            keyNameConc := currentLayer.HotkeyRelation.kModifier . k
+            if(v.options.stacked_key){
+                Hotkey keyNameConc, stackedHotkeyCallback(v)
+            }else{
+                Hotkey keyNameConc, standardHotkeyCallback(v)
+            } 
+        }        
+    }
+
 }
-FileAppend output, outputDir
+
+;Callback functions for defining different hotkeys
+standardHotkeyCallback(key){
+    Send key.kHotkey
+}
+stackedHotkeyCallback(key){
+    KeyWait(key.kOriginal, T0.3)
+    if(!ErrorLevel){
+        ;do or say the thing that we want to say on click
+        Send key.kHotkey
+    }Else{
+        Send key.options.second_key
+    }
+    
+}
