@@ -109,12 +109,12 @@ readLayer(dir){
 }
 
 writeLayer(LayerInput){
-    LightJson.Stringify(layerInst, '    ')
+    output := LightJson.Stringify(LayerInput, '    ')
     outputDir := LayerDir
     if(!DirExist(outputDir)){
         DirCreate(outputDir)
     }
-    outputDir .=  layerInst.name . ".json"
+    outputDir .=  LayerInput.name . ".json"
     if(FileExist(outputDir)){
         FileDelete(outputDir)
     }
@@ -127,33 +127,57 @@ writeLayer(LayerInput){
 ;   stacked_key := true false
 ;   second_key := 'seperate key'
 ;}
+ActivateLayers(){
+    Loop Files, LayerDir . "*.json"{
+        currentLayer := readLayer(A_LoopFilePath)
+        if(currentLayer.Active){
+            for k,v in currentLayer.HotkeyRelation.OwnProps(){
 
-Loop Files LayerDir {
-    currentLayer := readLayer(A_LoopFilePath)
-    if(currentLayer.Active){
-        for k,v in currentLayer.HotkeyRelation{
-            keyNameConc := currentLayer.HotkeyRelation.kModifier . k
-            if(v.options.stacked_key){
-                Hotkey keyNameConc, stackedHotkeyCallback(v)
-            }else{
-                Hotkey keyNameConc, standardHotkeyCallback(v)
-            } 
-        }        
+                keyNameConc := currentLayer.kModifier . k
+                callback := callbackGen(v)
+                Hotkey(keyNameConc,callback)
+            }        
+        }
+    
     }
+}
+;Custom callbackGenerator(returns callback)
+callBackGen(hotkeyValue){
 
+    if(!hotkeyValue.options.stacked_key){
+        standardHotkeyCallback(*){
+            Send hotkeyValue.kHotKey
+        }
+        return standardHotkeyCallback
+    }else{
+        stackedHotkeyCallback(*){
+            if(KeyWait(hotkeyValue.kOriginal,'T0.3')){
+                ;do or say the thing that we want to say on click
+                Send hotkeyValue.kHotkey
+            }Else{
+                Send hotkeyValue.options.second_key
+            }
+        }
+        return stackedHotkeyCallback
+    }
 }
 
 ;Callback functions for defining different hotkeys
-standardHotkeyCallback(key){
-    Send key.kHotkey
-}
-stackedHotkeyCallback(key){
-    KeyWait(key.kOriginal, T0.3)
-    if(!ErrorLevel){
-        ;do or say the thing that we want to say on click
-        Send key.kHotkey
-    }Else{
-        Send key.options.second_key
-    }
-    
-}
+
+
+
+update := LayerInstance('^','something')
+
+update.addHotKey('d','t',{
+    stacked_key : true,
+    second_key : 'r'
+})
+update.addHotKey('p','q',{
+    stacked_key : false
+})
+update.addHotKey('z','x',{
+    stacked_key : true,
+    second_key : 'u'
+})
+;writeLayer(update)
+ActivateLayers()
