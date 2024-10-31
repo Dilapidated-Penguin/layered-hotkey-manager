@@ -150,13 +150,25 @@ callBackGen(hotkeyValue){
         }
         return standardHotkeyCallback
     }else{
-        stackedHotkeyCallback(*){
-            if(KeyWait(hotkeyValue.kOriginal,'T0.3')){
-                ;do or say the thing that we want to say on click
+        stackedHotkeyCallback(hotKey_name){
+            if(KeyWait(hotkeyValue.kOriginal,'T0.4')){
                 Send hotkeyValue.kHotkey
+                KeyWait(hotkeyValue.kOriginal)
+                ;when the hotkey is sent it should wait until the user has released the key
             }Else{
                 Send hotkeyValue.options.second_key
+                ;
             }
+            ;manually uncheck the state of the modifer(s)
+            hotkey_Array := StrSplit(hotKey_name)
+            val := ''
+            for(val in hotkey_Array){
+                if(inStr('^!+',val)){
+                    ;unclick that modifier
+                    Send val up
+                }
+            }
+
         }
         return stackedHotkeyCallback
     }
