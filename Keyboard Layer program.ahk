@@ -4,6 +4,8 @@
 
 
 global LayerDir := A_ScriptDir . "\layers\"
+global long_key_pressed := false
+
 Class Key
 {
     __New(kOriginal,kHotKey,objOptions){
@@ -131,16 +133,25 @@ ActivateLayers(){
     Loop Files, LayerDir . "*.json"{
         currentLayer := readLayer(A_LoopFilePath)
         if(currentLayer.Active){
+            
             for k,v in currentLayer.HotkeyRelation.OwnProps(){
 
                 keyNameConc := currentLayer.kModifier . k
                 callback := callbackGen(v)
                 Hotkey(keyNameConc,callback)
+
+                if(v.options.stacked_key){
+                    Hotkey(keyNameConc . ' Up',callbackLift)
+                }
             }        
         }
-    
     }
 }
+callbackLift(*){
+    global long_key_pressed := false
+    ;msgbox(long_key_pressed)
+}
+
 ;Custom callbackGenerator(returns callback)
 callBackGen(hotkeyValue){
 
@@ -151,31 +162,30 @@ callBackGen(hotkeyValue){
         return standardHotkeyCallback
     }else{
         stackedHotkeyCallback(hotKey_name){
-            if(KeyWait(hotkeyValue.kOriginal,'T0.4')){
-                Send hotkeyValue.kHotkey
-                KeyWait(hotkeyValue.kOriginal)
-                ;when the hotkey is sent it should wait until the user has released the key
-            }Else{
-                Send hotkeyValue.options.second_key
-                ;
+            ;msgbox(long_key_pressed)
+            if(long_key_pressed){
+                return
+            }else{
+                global long_key_pressed := true
+                keyArray := StrSplit(hotKey_name)
+                checked_Key := keyArray[-1]
+                isHeldDown := keyWait(checked_Key,"T0.2")
+                key_to_Send := isHeldDown ? hotkeyValue.options.second_key : hotkeyValue.kHotKey
+                
+                Send(key_to_Send)
+                  
             }
-            ;manually uncheck the state of the modifer(s)
-            hotkey_Array := StrSplit(hotKey_name)
-            val := ''
-            for(val in hotkey_Array){
-                if(inStr('^!+',val)){
-                    ;unclick that modifier
-                    Send val up
-                }
-            }
-
         }
         return stackedHotkeyCallback
     }
 }
+HoldTimerGen(checked_Key,hotkeyValue){
+    timerCallback(){
 
-;Callback functions for defining different hotkeys
-
+    }
+    return timerCallback
+    ;returns the function that is run on setTImer
+}
 
 
 update := LayerInstance('^','something')
@@ -191,5 +201,6 @@ update.addHotKey('z','x',{
     stacked_key : true,
     second_key : 'u'
 })
-;writeLayer(update)
+
+writeLayer(update)
 ActivateLayers()
