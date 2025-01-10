@@ -51,7 +51,6 @@ Constructor()
 	global listview_row_value := 0
 	global keyTypeMenu := Menu()
 	keyTypeMenu.Add("Standard key",standard_Hotkey)
-	keyTypeMenu.Add("Staggered key",staggered_hotkey)
 
 	RightClickMenu.Add("Add new hotkey",keyTypeMenu)
 	RightClickMenu.Add("Remove Hotkey",rmHotkey)
@@ -74,13 +73,10 @@ Constructor()
 ;Context menu callback functions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 standard_Hotkey(ItemName, ItemPos, MyMenu){
 	;create a gui to throw input hooks
-	hotkey_GUI := standard_hotkey_select_gui()
-	hotkey_GUI.Show("w295 h259")
+	hotkey_selector := hotkey_select_constr()
+	hotkey_selector.Show("w188 h279")
 }
-staggered_hotkey(ItemName, ItemPos, MyMenu){
-	global listview_row_value
-	msgBox(listview_row_value)
-}
+
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 get_LV_row(row_number){
 	row_array := []
@@ -213,10 +209,7 @@ ToggleActiveLayersMenu(ItemName, ItemPos, MyMenu){
 	}
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-standard_hotkey_select_gui()
-{	
-	msgBox("standard hotkey inputHookcoonery")
-}
+
 prompt_modifier_GUI(layer_name)
 {	
 	
@@ -274,7 +267,7 @@ prompt_modifier_GUI(layer_name)
 			modifier_string .= "+"
 		}
 		msgBox("modifier string: " . modifier_string . "`nRight click on the listview to add a new button `nNew Layer Instance created")
-		global layer_to_edit := LayerInstance()
+		global layer_to_edit := LayerInstance(modifier_string,layer_name)
 		global mid_edit := true
 	}
 	radio_update(radio_button_clicked,*)
@@ -282,5 +275,74 @@ prompt_modifier_GUI(layer_name)
 		ButtonConfirmselection.Enabled := true
 	}
 	
+	return myGui
+}
+
+hotkey_select_constr()
+{	
+	myGui := Gui()
+	buttonConfirm := myGui.Add("Button", "x48 y224 w80 h23", "Confirm")
+	buttonConfirm.Enabled := false
+	key_entered := hotkey_entered := false
+	second_hotkey_entered := true
+
+	myGui.Add("Text", "x32 y88 w120 h23 +0x200", "Hotkey")
+	myGui.Add("Text", "x32 y24 w120 h23 +0x200", "key")
+
+	is_layered := myGui.Add("CheckBox", "x16 y160 w120 h23", "Hotkey when held")
+	is_layered.Name := "is_layered"
+	LayeredHotkeyEdit := myGui.Add("Hotkey", "x32 y184 w120 h21")
+	LayeredHotkeyEdit.Name := "second_key"
+	LayeredHotkeyEdit.Enabled := false
+
+	keyEdit := myGui.Add("Edit", "Limit1 Lowercase x32 y48 w120 h21")
+	keyEdit.Name := "key"
+	hotkeyEdit := myGui.Add("Hotkey", "x32 y112 w120 h21")
+	hotkeyEdit.Name := "hotkey"
+
+	buttonConfirm.OnEvent("Click", onButtonClick)
+
+	keyEdit.OnEvent("Change", OnEventHandler)
+	hotkeyEdit.OnEvent("Change",OnEventHandler)
+	LayeredHotkeyEdit.OnEvent("Change",OnEventHandler)
+
+	is_layered.OnEvent("Click",onlayeredCheck)
+	;myGui.OnEvent('Close', (*) => ExitApp())
+	myGui.Title := ":)"
+	onlayeredCheck(GuiCtrlObj, Info){
+		LayeredHotkeyEdit.Enabled := GuiCtrlObj.Value
+		second_hotkey_entered := !GuiCtrlObj.Value
+		if(GuiCtrlObj.Value && (LayeredHotkeyEdit.Value != "")){
+			second_hotkey_entered := true
+		}
+
+		OnEventHandler(GuiCtrlObj,Info)
+	}
+
+	OnEventHandler(GuiCtrlObj, Info){
+		switch GuiCtrlObj.Name
+		{
+			case "key": key_entered := true
+			case "hotkey": hotkey_entered := true
+			case "second_key": second_hotkey_entered := true
+		}
+		;msgBox(key_entered "+" hotkey_entered "+" second_hotkey_entered)
+		buttonConfirm.Enabled := key_entered && hotkey_entered && second_hotkey_entered
+	}
+	onButtonClick(*){
+		submitted_hotkey := myGUI.Submit(0)
+		if(inStr("abcdefghijklmnopqrstuvwxyz123456789[]\;',./-=*-+",submitted_hotkey.key)){
+
+		}else{
+			msgBox("Invalid Key")
+			keyEdit.Value := ""
+			hotkeyEdit.Value := ""
+			buttonConfirm.Enabled := key_entered := hotkey_entered := false
+			second_hotkey_entered := true
+			LayeredHotkeyEdit.Value := ""
+			LayeredHotkeyEdit.Enabled := false
+			is_layered.Value := false
+		}
+	}
 	return myGui
 }
