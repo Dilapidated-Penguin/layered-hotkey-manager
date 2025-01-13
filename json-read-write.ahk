@@ -2,6 +2,8 @@
 #SingleInstance
 #Warn All, Off
 
+
+#include %A_ScriptDir%\layer.ahk
 ;JSON parsing code by
 class LightJson
 {
@@ -73,8 +75,14 @@ class LightJson
 
 ;Reading and writing to jsons
 readLayer(dir){
-    text := FileRead(dir)
-    return LightJson.parse(text,false)
+    i := LightJson.parse(FileRead(dir),false)
+    result := LayerInstance(i.kModifier,i.name,i.active,i.isMidiLayer)
+    ;populating the hotkeyrelation
+    for k,v in i.HotkeyRelation.OwnProps(){
+        result.HotkeyRelation[k] := v   
+    }
+    ;msgBox(LightJson.Stringify(result,"    "))
+    return result
 }
 
 writeLayer(LayerInput){

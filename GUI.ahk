@@ -9,7 +9,7 @@ global LayerDir := A_ScriptDir . "\layers\"
 #include %A_ScriptDir%\layer.ahk
 
 global layer_to_edit
-global mid_edit := false
+global mid_edit
 
 if A_LineFile = A_ScriptFullPath && !A_IsCompiled
 {
@@ -19,7 +19,8 @@ if A_LineFile = A_ScriptFullPath && !A_IsCompiled
 	CreateLayerMenu.Add("Create New keyboard layer",CreateCallback)
 	CreateLayerMenu.Add("Create new MIDI layer",CreateCallback)
 
-
+	global mid_edit := false
+	
 	myGui := Constructor()
 	myGui.Show("w345 h360")
 }
@@ -33,19 +34,17 @@ Constructor()
 	myGui := Gui()
 	myGui.MenuBar := MenuBar_Storage
 	global ListViewKeyHotkeyHotkeytypeSecondKey := myGui.Add("ListView", "x0 y0 w345 h360 +LV0x4000 Backgroundblack cyellow Count10 vIn1", ["Key", "Hotkey", "Hotkey type", "Second Key"])
-	ListViewKeyHotkeyHotkeytypeSecondKey.Add(,"Sample1")
-	; ListViewKeyHotkeyHotkeytypeSecondKey.OnEvent("DoubleClick", LV_DoubleClick)
+	;ListViewKeyHotkeyHotkeytypeSecondKey.Add(,"Sample1")
+	;ListViewKeyHotkeyHotkeytypeSecondKey.OnEvent("DoubleClick", LV_DoubleClick)
 	ListViewKeyHotkeyHotkeytypeSecondKey.OnEvent("ContextMenu", LV_RightClick)
 	myGui.OnEvent('Close', (*) => ExitApp())
 	myGui.Title := "Window"
 	
-	; LV_DoubleClick(LV, RowNum)
-	; {
-	; 	if not RowNum
-	; 		return
-	; 	ToolTip(LV.GetText(RowNum), 77, 277)
-	; 	SetTimer () => ToolTip(), -3000
-	; }
+	;LV_DoubleClick(LV, RowNum)
+	;{
+	;    rowArray := get_LV_row(RowNum) ; Get the text from the row's first field.
+    ;	ToolTip("You double-clicked row number " RowNumber ". Text: '" RowText "'")
+	;}
 	;Context Menu @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	global RightClickMenu := Menu()
 	global listview_row_value := 0
@@ -73,8 +72,15 @@ Constructor()
 ;Context menu callback functions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 standard_Hotkey(ItemName, ItemPos, MyMenu){
 	;create a gui to throw input hooks
-	hotkey_selector := hotkey_select_constr()
-	hotkey_selector.Show("w188 h279")
+	global mid_edit
+	if(mid_edit){
+		hotkey_selector := hotkey_select_constr()
+		hotkey_selector.Show("w188 h279")
+	}else{
+		ToolTip("Select or create a layer to add a hotkey")
+		SetTimer((*)=>ToolTip(), -2000)
+	}
+
 }
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -103,7 +109,7 @@ renderLayerMenu(){
 	seperator_location := 1
     Loop Files, LayerDir . "*.json"{
 		layer := readLayer(A_LoopFilePath)
-		callback := renderCallbackGenerator(layer)
+		callback := renderListViewGen(layer)
 		if(!layer.isMidiLayer){
 			layerMenu.Insert(seperator_location . "&", A_LoopFileName,callback)
 			seperator_location++
@@ -115,13 +121,13 @@ renderLayerMenu(){
 }
 ;loads the selected layer into the listview to modify
 
-renderCallbackGenerator(layer){
-
-	callback(ItemName, ItemPos, MyMenu){
+renderListViewGen(layer){
+	callback(*){
 		global ListViewKeyHotkeyHotkeytypeSecondKey
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
-
-		for(k,v in layer.HotkeyRelation.OwnProps()){
+		global layer_to_edit := layer
+		global mid_edit := true
+		for(k,v in layer_to_edit.HotkeyRelation){
 			key_type := v.options.stacked_key ? "stacked key" : "traditional"
 			second_key := v.options.stacked_key ? v.options.second_key : "N/A"
 			
@@ -131,20 +137,20 @@ renderCallbackGenerator(layer){
 	return callback
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 CreateCallback(ItemName, ItemPos, MyMenu){
 	isMidiLayer := (ItemName = "Create new MIDI layer")
 	layer_name := InputBox("Layer name:","Enter",,A_Now)
 	if(!isMidiLayer){
-		;gui to prompt for the modifier
-		
 		modifier_GUI := prompt_modifier_GUI(layer_name)
 		modifier_GUI.show("w220 h230")
 	}else{
 		; 
 	}
 	;Create global layerInstance to update to until some submit button is clicked
-	;global layer_to_edit := LayerInstance()
 	ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
+	msgBox("created")
 
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -268,6 +274,7 @@ prompt_modifier_GUI(layer_name)
 		}
 		msgBox("modifier string: " . modifier_string . "`nRight click on the listview to add a new button `nNew Layer Instance created")
 		global layer_to_edit := LayerInstance(modifier_string,layer_name)
+		writeLayer(layer_to_edit)
 		global mid_edit := true
 	}
 	radio_update(radio_button_clicked,*)
@@ -332,7 +339,19 @@ hotkey_select_constr()
 	onButtonClick(*){
 		submitted_hotkey := myGUI.Submit(0)
 		if(inStr("abcdefghijklmnopqrstuvwxyz123456789[]\;',./-=*-+",submitted_hotkey.key)){
+			options := {
+				stacked_key: submitted_hotkey.is_layered,
+			}
+			if(submitted_hotkey.is_layered){
+				options.second_key := submitted_hotkey.second_key
+			}
+			global layer_to_edit
 
+			layer_to_edit.addHotKey(submitted_hotkey.key, submitted_hotkey.hotkey,options)
+			writeLayer(layer_to_edit)
+			render_updated_layer := renderListViewGen(layer_to_edit)
+			render_updated_layer()
+			myGUI.Destroy()
 		}else{
 			msgBox("Invalid Key")
 			keyEdit.Value := ""
