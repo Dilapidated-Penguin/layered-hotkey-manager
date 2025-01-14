@@ -21,8 +21,8 @@ if A_LineFile = A_ScriptFullPath && !A_IsCompiled
 
 	global mid_edit := false
 	
-	myGui := Constructor()
-	myGui.Show("w280 h360")
+	global Main_Gui := Constructor()
+	Main_Gui.Show("w280 h360")
 }
 
 Constructor()
@@ -115,11 +115,13 @@ renderLayerMenu(){
     Loop Files, LayerDir . "*.json"{
 		layer := readLayer(A_LoopFilePath)
 		callback := renderListViewGen(layer)
+
+		layer_name := RegExReplace(A_LoopFileName,".json","")
 		if(!layer.isMidiLayer){
-			layerMenu.Insert(seperator_location . "&", A_LoopFileName,callback)
+			layerMenu.Insert(seperator_location . "&", layer_name,callback)
 			seperator_location++
 		}else{
-			layerMenu.Add(A_LoopFileName, callback)
+			layerMenu.Add(layer_name, callback)
 		}
     }
     return layerMenu
@@ -146,16 +148,18 @@ renderListViewGen(layer){
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 CreateCallback(ItemName, ItemPos, MyMenu){
 	isMidiLayer := (ItemName = "Create new MIDI layer")
-	layer_name := InputBox("Layer name:","Enter",,A_Now)
-	if(!isMidiLayer){
-		modifier_GUI := prompt_modifier_GUI(layer_name)
-		modifier_GUI.show("w220 h230")
-	}else{
-		; 
+	objLayer_name := InputBox("Layer name:","Enter","W300 H99",A_Now)
+	if(objLayer_name.Result != "Cancel"){
+		if(!isMidiLayer){
+			modifier_GUI := prompt_modifier_GUI(objLayer_name)
+			modifier_GUI.show("w220 h230")
+		}else{
+			; 
+		}
+		;Create global layerInstance to update to until some submit button is clicked
+		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}
-	;Create global layerInstance to update to until some submit button is clicked
-	ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
-	msgBox("created")
+
 
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -278,9 +282,17 @@ prompt_modifier_GUI(layer_name)
 			modifier_string .= "+"
 		}
 		msgBox("modifier string: " . modifier_string . "`nRight click on the listview to add a new button `nNew Layer Instance created")
-		global layer_to_edit := LayerInstance(modifier_string,layer_name)
+		global layer_to_edit := LayerInstance(modifier_string,layer_name.value)
+		;msgBox(LightJson.Stringify(layer_to_edit,"	"))
 		writeLayer(layer_to_edit)
 		global mid_edit := true
+		;Gotta get the layer menu to update when a new one is created
+
+
+		;callback := renderListViewGen(layer_to_edit)
+		;global layerMenu
+		;layerMenu.Add(layer_name, callback)
+		;Main_Gui.Show("w280 h360")
 	}
 	radio_update(radio_button_clicked,*)
 	{
