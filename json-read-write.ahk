@@ -2,8 +2,8 @@
 #SingleInstance
 #Warn All, Off
 
-
 #include %A_ScriptDir%\layer.ahk
+
 ;JSON parsing code by
 class LightJson
 {
@@ -81,7 +81,6 @@ readLayer(dir){
     for k,v in i.HotkeyRelation.OwnProps(){
         result.HotkeyRelation[k] := v   
     }
-    ;msgBox(LightJson.Stringify(result,"    "))
     return result
 }
 

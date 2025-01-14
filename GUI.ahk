@@ -22,7 +22,7 @@ if A_LineFile = A_ScriptFullPath && !A_IsCompiled
 	global mid_edit := false
 	
 	myGui := Constructor()
-	myGui.Show("w345 h360")
+	myGui.Show("w280 h360")
 }
 
 Constructor()
@@ -88,19 +88,24 @@ get_LV_row(row_number){
 	row_array := []
 	col_count := ListViewKeyHotkeyHotkeytypeSecondKey.GetCount("Col")
 	Loop col_count {
-		row_array[A_Index] := ListViewKeyHotkeyHotkeytypeSecondKey.GetText(row_number,A_Index)
+		row_array.push(ListViewKeyHotkeyHotkeytypeSecondKey.GetText(row_number,A_Index))
 	}
 	return row_array
 }
 rmHotkey(ItemName, ItemPos, MyMenu){
 	global listview_row_value
+	row_data := get_LV_row(listview_row_value)
+	layer_to_edit.rmHotKey(row_data[1])
+
 	ListViewKeyHotkeyHotkeytypeSecondKey.Delete(listview_row_value)
-	msgBox('Row deleted!')
+	writeLayer(layer_to_edit)
 }
 editHotkey(ItemName, ItemPos, MyMenu){
 	global listview_row_value
 	row_data := get_LV_row(listview_row_value)
-	;input hooks and radiogroups
+	msgBox(LightJson.Stringify(row_data,"	"))
+	gui := hotkey_select_constr(row_data[1],row_data[2],row_data[3],row_data[4],1)
+	gui.show("w188 h279")
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 renderLayerMenu(){
@@ -285,11 +290,11 @@ prompt_modifier_GUI(layer_name)
 	return myGui
 }
 
-hotkey_select_constr()
+hotkey_select_constr(default_key := "",default_hotkey := "", default_layered_status := false, default_second_key := "",set_to_edit := false)
 {	
 	myGui := Gui()
 	buttonConfirm := myGui.Add("Button", "x48 y224 w80 h23", "Confirm")
-	buttonConfirm.Enabled := false
+	buttonConfirm.Enabled := set_to_edit
 	key_entered := hotkey_entered := false
 	second_hotkey_entered := true
 
@@ -300,12 +305,20 @@ hotkey_select_constr()
 	is_layered.Name := "is_layered"
 	LayeredHotkeyEdit := myGui.Add("Hotkey", "x32 y184 w120 h21")
 	LayeredHotkeyEdit.Name := "second_key"
-	LayeredHotkeyEdit.Enabled := false
+
 
 	keyEdit := myGui.Add("Edit", "Limit1 Lowercase x32 y48 w120 h21")
 	keyEdit.Name := "key"
 	hotkeyEdit := myGui.Add("Hotkey", "x32 y112 w120 h21")
 	hotkeyEdit.Name := "hotkey"
+
+	;setting the default inputs
+	default_layered_status := default_layered_status == "stacked key"
+	keyEdit.Value := default_key
+	hotkeyEdit.Value := default_hotkey
+	LayeredHotkeyEdit.Enabled := default_layered_status
+	LayeredHotkeyEdit.Value := default_second_key
+	is_layered.Value := default_layered_status
 
 	buttonConfirm.OnEvent("Click", onButtonClick)
 
@@ -315,6 +328,8 @@ hotkey_select_constr()
 
 	is_layered.OnEvent("Click",onlayeredCheck)
 	;myGui.OnEvent('Close', (*) => ExitApp())
+
+
 	myGui.Title := ":)"
 	onlayeredCheck(GuiCtrlObj, Info){
 		LayeredHotkeyEdit.Enabled := GuiCtrlObj.Value
@@ -333,8 +348,7 @@ hotkey_select_constr()
 			case "hotkey": hotkey_entered := true
 			case "second_key": second_hotkey_entered := true
 		}
-		;msgBox(key_entered "+" hotkey_entered "+" second_hotkey_entered)
-		buttonConfirm.Enabled := key_entered && hotkey_entered && second_hotkey_entered
+		buttonConfirm.Enabled := set_to_edit || (key_entered && hotkey_entered && second_hotkey_entered)
 	}
 	onButtonClick(*){
 		submitted_hotkey := myGUI.Submit(0)
@@ -354,13 +368,13 @@ hotkey_select_constr()
 			myGUI.Destroy()
 		}else{
 			msgBox("Invalid Key")
-			keyEdit.Value := ""
-			hotkeyEdit.Value := ""
+			keyEdit.Value := default_key
+			hotkeyEdit.Value := default_hotkey
 			buttonConfirm.Enabled := key_entered := hotkey_entered := false
 			second_hotkey_entered := true
-			LayeredHotkeyEdit.Value := ""
-			LayeredHotkeyEdit.Enabled := false
-			is_layered.Value := false
+			LayeredHotkeyEdit.Value := default_second_key
+			LayeredHotkeyEdit.Enabled := default_layered_status
+			is_layered.Value := default_layered_status
 		}
 	}
 	return myGui
