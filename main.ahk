@@ -46,12 +46,7 @@ Constructor()
 	ListViewKeyHotkeyHotkeytypeSecondKey.OnEvent("ContextMenu", LV_RightClick)
 	myGui.OnEvent('Close', (*) => ExitApp())
 	myGui.Title := "Window"
-	
-	;LV_DoubleClick(LV, RowNum)
-	;{
-	;    rowArray := get_LV_row(RowNum) ; Get the text from the row's first field.
-    ;	ToolTip("You double-clicked row number " RowNumber ". Text: '" RowText "'")
-	;}
+
 	;Context Menu @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	global RightClickMenu := Menu()
 	global listview_row_value := 0
@@ -150,7 +145,6 @@ renderListViewGen(layer){
 	}
 	return callback
 }
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 CreateCallback(ItemName, ItemPos, MyMenu){
@@ -166,6 +160,4 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 		;Create global layerInstance to update to until some submit button is clicked
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}
-
-
 }

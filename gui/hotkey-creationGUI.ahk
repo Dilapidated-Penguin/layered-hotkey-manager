@@ -35,8 +35,6 @@ hotkey_select_constr(default_key := "",default_hotkey := "", default_layered_sta
 	LayeredHotkeyEdit.OnEvent("Change",OnEventHandler)
 
 	is_layered.OnEvent("Click",onlayeredCheck)
-	;myGui.OnEvent('Close', (*) => ExitApp())
-
 
 	myGui.Title := ":)"
 	onlayeredCheck(GuiCtrlObj, Info){
@@ -60,7 +58,7 @@ hotkey_select_constr(default_key := "",default_hotkey := "", default_layered_sta
 	}
 	onButtonClick(*){
 		submitted_hotkey := myGUI.Submit(0)
-		if(inStr("abcdefghijklmnopqrstuvwxyz123456789[]\;',./-=*-+",submitted_hotkey.key)){
+		if(verify_key_input(submitted_hotkey.key)){
 			options := {
 				stacked_key: submitted_hotkey.is_layered,
 			}
@@ -86,4 +84,9 @@ hotkey_select_constr(default_key := "",default_hotkey := "", default_layered_sta
 		}
 	}
 	return myGui
+}
+
+verify_key_input(input){
+	valid_keys := "abcdefghijklmnopqrstuvwxyz123456789[]\;',./-=*-+"
+	return inStr(valid_keys,input)
 }
