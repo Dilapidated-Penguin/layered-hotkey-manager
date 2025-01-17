@@ -157,7 +157,6 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 		}else{
 			; 
 		}
-		;Create global layerInstance to update to until some submit button is clicked
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}
 }
