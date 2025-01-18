@@ -4,19 +4,22 @@
 ;AutoGUI creator: Alguimist autohotkey.com/boards/viewtopic.php?f=64&t=89901
 ;AHKv2converter creator: github.com/mmikeww/AHK-v2-script-converter
 ;EasyAutoGUI-AHKv2 github.com/samfisherirl/Easy-Auto-GUI-for-AHK-v2
-global LayerDir := A_ScriptDir . "\layers\"
 
-#include %A_ScriptDir%\json-read-write.ahk
-#include %A_ScriptDir%\layer.ahk
+SetWorkingDir A_ScriptDir
+
+global LayerDir := A_WorkingDir . "\layers\"
+
+#include %A_WorkingDir%\json-read-write.ahk
+#include %A_WorkingDir%\layer.ahk
 
 global layer_to_edit
 global mid_edit
 
-;Menus
-#include %A_SCriptDir%\gui\Layer-toggleGUI.ahk
-#include %A_SCriptDir%\gui\modifier-promptGUI.ahk
-#include %A_SCriptDir%\gui\hotkey-creationGUI.ahk
-
+;GUI pages
+#include %A_WorkingDir%\gui\Layer-toggleGUI.ahk
+#include %A_WorkingDir%\gui\modifier-promptGUI.ahk
+#include %A_WorkingDir%\gui\hotkey-creationGUI.ahk
+#include %A_WorkingDir%\gui\midi-hotkeyGUI.ahk
 
 if A_LineFile = A_ScriptFullPath && !A_IsCompiled
 {
@@ -155,7 +158,9 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 			modifier_GUI := prompt_modifier_GUI(objLayer_name)
 			modifier_GUI.show("w220 h230")
 		}else{
-			; 
+			midi_prompt_GUI := midi_hotkeyGUI()
+			midi_prompt_GUI.Show("w224 h136")
+			global layer_to_edit
 		}
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}

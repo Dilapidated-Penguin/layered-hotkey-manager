@@ -4,7 +4,7 @@
 
 Class Key
 {
-    __New(kOriginal,kHotKey,objOptions){
+    __New(kOriginal,kHotKey,objOptions := 0){
         this.kOriginal := kOriginal
         this.kHotKey := kHotKey
         this.options := objOptions

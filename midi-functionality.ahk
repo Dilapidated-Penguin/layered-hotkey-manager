@@ -30,19 +30,27 @@ gosub, midiMon           	    ; see below - a midi monitor gui - for learning mo
 ; See http://www.midi.org/techspecs/midimessages.php (decimal values).
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-MidiMsgDetect(hInput, midiMsg, wMsg) ; !!!! Midi input section in calls this function each time a midi message is received. Then the midi message is broken up into parts for manipulation.  See http://www.midi.org/techspecs/midimessages.php (decimal values).
+;%1%: the flag designating whether the user is attempting to use a hotkey(r), store a hotkey(w), remove a hotkey(rm)
+;%2%: if the user is attempting to store a hotkey in a layer %2% will contain the hotkey.
+;%3%: will contain the name of the layer being edited
+
+;Midi input section in calls this function each time a midi message is received. Then the midi message is broken up into parts for manipulation.
+MidiMsgDetect(hInput, midiMsg, wMsg)
 {
-	if (%1%=="running")
-	{ 
-		dir := A_ScriptDir . "\midi-scripts\run-midi.ahk" . data1 . " " . data2
-	;send to script that reads the json and checks if this is a "hotkey" in an active layer
-	} else if (%1%=="programming") {
-		dir := A_ScriptDir . "\midi-scripts\prog-midi.ahk" . data1 . " " . data2
-	;Sends to a script that confirms if they would like to save the "hotkey " and then does or doesn't
-	;have the gui ahk refresh regardless
-	}
-	Run  %dir%
-} ; end of MidiMsgDetect funciton
+	dir := """midi-scripts\"
+	msgBox, %0%
+
+	;switch (%1%){
+	;	case "r":
+	;		dir .= "run-midi.ahk""" . data1 . " " . data2
+	;	case "w":
+	;		dir .= "prog-midi.ahk""" . %1% .  " " . %3% . " " . data1 . " " . %2%
+	;	case "rm":
+	;		dir .=	"prog-midi.ahk""" . %1% . " " . %3%  . " " . data1 . " " . %2% 
+	;}	
+	;Run  %dir%
+	;the flag redirects to respective scripts in the midi-scripts folder
+} 
 return
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
