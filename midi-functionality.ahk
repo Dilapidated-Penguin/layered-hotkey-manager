@@ -14,7 +14,6 @@
 #SingleInstance, force
 SetTitleMatchMode, 2
 SendMode Input              	; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir% 	; Ensures a consistent starting directory.
 ; =============== 
 version = XTouchOne2DaVinciResolve
 ; =============== 
@@ -30,25 +29,41 @@ gosub, midiMon           	    ; see below - a midi monitor gui - for learning mo
 ; See http://www.midi.org/techspecs/midimessages.php (decimal values).
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-;%1%: the flag designating whether the user is attempting to use a hotkey(r), store a hotkey(w), remove a hotkey(rm)
-;%2%: if the user is attempting to store a hotkey in a layer %2% will contain the hotkey.
-;%3%: will contain the name of the layer being edited
+
 
 ;Midi input section in calls this function each time a midi message is received. Then the midi message is broken up into parts for manipulation.
 MidiMsgDetect(hInput, midiMsg, wMsg)
 {
+	
 	dir := """midi-scripts\"
-	msgBox, %0%
+	EnvGet, flag, HOTKEY_OPERATION
+	EnvGet, hotkey_val, HOTKEY_VALUE
+	EnvGet, working_dir, WORKING_DIRECTORY
+	MsgBox, %data1%
+	EnvSet, "NOTE_NUMBER", data1
+	EnvSet, "NOTE_VELOCITY", data2
+	
+	;data_results := %data1% . "," , %data2%
+	;data_dir := working_dir . "key_click.temp"
+	;if(FileExist(data_dir)){
+    ;    FileDelete, data_dir
+    ;}
+    ;FileAppend data_results, data_dir
 
-	;switch (%1%){
-	;	case "r":
-	;		dir .= "run-midi.ahk""" . data1 . " " . data2
-	;	case "w":
-	;		dir .= "prog-midi.ahk""" . %1% .  " " . %3% . " " . data1 . " " . %2%
-	;	case "rm":
-	;		dir .=	"prog-midi.ahk""" . %1% . " " . %3%  . " " . data1 . " " . %2% 
-	;}	
-	;Run  %dir%
+	switch (flag){
+		case "r":
+			dir .= "run-midi.ahk"""
+		case "w":
+			dir .= "prog-midi.ahk"""
+			if(data1 != ""){
+				RunWait, %dir%
+				ExitApp
+			}
+		case "rm":
+			dir .=	"prog-midi.ahk"""
+	}
+	
+
 	;the flag redirects to respective scripts in the midi-scripts folder
 } 
 return

@@ -76,16 +76,21 @@ Constructor()
 }
 ;Context menu callback functions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 standard_Hotkey(ItemName, ItemPos, MyMenu){
-	;create a gui to throw input hooks
 	global mid_edit
 	if(mid_edit){
-		hotkey_selector := hotkey_select_constr()
-		hotkey_selector.Show("w188 h279")
+		if(!layer_to_edit.isMidiLayer){
+			hotkey_selector := hotkey_select_constr()
+			hotkey_selector.Show("w188 h279")
+		}else{
+			midi_prompt_GUI := midi_hotkeyGUI()
+			midi_prompt_GUI.Show("w224 h136")
+		}
+		render_updated_layer := renderListViewGen(layer_to_edit)
+		render_updated_layer()
 	}else{
 		ToolTip("Select or create a layer to add a hotkey")
 		SetTimer((*)=>ToolTip(), -2000)
 	}
-
 }
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -109,8 +114,8 @@ editHotkey(ItemName, ItemPos, MyMenu){
 	global listview_row_value
 	row_data := get_LV_row(listview_row_value)
 	msgBox(LightJson.Stringify(row_data,"	"))
-	gui := hotkey_select_constr(row_data[1],row_data[2],row_data[3],row_data[4],1)
-	gui.show("w188 h279")
+	Hotkey_select_gui := hotkey_select_constr(row_data[1],row_data[2],row_data[3],row_data[4],1)
+	Hotkey_select_gui.show("w188 h279")
 }
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 renderLayerMenu(){
@@ -154,13 +159,18 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 	isMidiLayer := (ItemName = "Create new MIDI layer")
 	objLayer_name := InputBox("Layer name:","Enter","W300 H99",A_Now)
 	if(objLayer_name.Result != "Cancel"){
+		global layer_to_edit
+		global mid_edit
+		mid_edit := true
+
 		if(!isMidiLayer){
 			modifier_GUI := prompt_modifier_GUI(objLayer_name)
 			modifier_GUI.show("w220 h230")
 		}else{
-			midi_prompt_GUI := midi_hotkeyGUI()
-			midi_prompt_GUI.Show("w224 h136")
-			global layer_to_edit
+			layer_to_edit := LayerInstance("",objLayer_name.value,true,true)
+			writeLayer(layer_to_edit)
+			;
+			msgBox("add to midi layer")
 		}
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}

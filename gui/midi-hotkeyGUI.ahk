@@ -10,11 +10,20 @@ midi_hotkeyGUI()
     )
 
     myGui.Add("Text", "x24 y16 w156 h23 +0x200", "Enter the hotkey for the midi key")
-    ButtonAssigntomidikey.OnEvent("Click", (*)=>
-        msgBox("`"midi-functionality.ahk`" `"w`"" . " `"" . hotkeyEdit.value . "`"")
-    )
-    ;RunWait("`"midi-functionality.ahk`" `"w`"" . " `"" . hotkeyEdit.value . "`"")
-    ;myGui.OnEvent('Close', (*) => ExitApp())
+    ButtonAssigntomidikey.OnEvent("Click", button_click)
+    button_click(*){
+        EnvSet "HOTKEY_OPERATION", "w"
+        EnvSet "HOTKEY_VALUE", hotkeyEdit.value
+        EnvSet "MIDI_LAYER_NAME", layer_to_edit.name
+        EnvSet "WORKING_DIRECTORY", A_WorkingDir
+
+        RunWait("`"midi-functionality.ahk`"", A_WorkingDir)
+
+        callback := renderListViewGen(layer_to_edit)
+        callback()
+        myGUI.Destroy()
+    }
+
     myGui.Title := "midi hotkey"
 
     return myGui
