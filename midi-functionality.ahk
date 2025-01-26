@@ -34,37 +34,32 @@ gosub, midiMon           	    ; see below - a midi monitor gui - for learning mo
 ;Midi input section in calls this function each time a midi message is received. Then the midi message is broken up into parts for manipulation.
 MidiMsgDetect(hInput, midiMsg, wMsg)
 {
-	
+	global statusbyte, chan, note, cc, data1, data2, stb ;Make these vars global to be used in other functions
+	statusbyte :=  midiMsg & 0xFF          ; Extract statusbyte = what type of MIDI message and what channel
+	chan       := (statusbyte & 0x0f) + 1  ; The MIDI channel
+	data1      := (midiMsg >> 8) & 0xFF    ; data1 is Note # or CC #
+	data2      := (midiMsg >> 16) & 0xFF   ; data2 is Velocity or CC value
+	pitchb     := (data2 << 7) | data1     ; (midiMsg >> 8) & 0x7F7F  masking to extract the pitchbends 
+
 	dir := """midi-scripts\"
 	EnvGet, flag, HOTKEY_OPERATION
 	EnvGet, hotkey_val, HOTKEY_VALUE
-	EnvGet, working_dir, WORKING_DIRECTORY
-	MsgBox, %data1%
-	EnvSet, "NOTE_NUMBER", data1
-	EnvSet, "NOTE_VELOCITY", data2
-	
-	;data_results := %data1% . "," , %data2%
-	;data_dir := working_dir . "key_click.temp"
-	;if(FileExist(data_dir)){
-    ;    FileDelete, data_dir
-    ;}
-    ;FileAppend data_results, data_dir
+	EnvSet, "NOTE_NUMBER", %data1%
+	EnvSet, "NOTE_VELOCITY", %data2%
 
 	switch (flag){
 		case "r":
 			dir .= "run-midi.ahk"""
 		case "w":
 			dir .= "prog-midi.ahk"""
-			if(data1 != ""){
+			if(%data1% != 0){
 				RunWait, %dir%
 				ExitApp
 			}
 		case "rm":
 			dir .=	"prog-midi.ahk"""
 	}
-	
-
-	;the flag redirects to respective scripts in the midi-scripts folder
+	;this function is ran when the user presses
 } 
 return
 

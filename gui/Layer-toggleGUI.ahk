@@ -43,7 +43,7 @@ ToggleActiveLayersMenu(ItemName, ItemPos, MyMenu){
 				layer := readLayer(file_to_update)
 				if(layer.Active != active_state){
 					layer.Active := active_state
-					writeLayer(layer)
+					writeLayer(layer,LayerDir)
 				}
 			}
 			msgBox("Updated!")

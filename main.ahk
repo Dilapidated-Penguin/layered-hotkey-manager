@@ -9,8 +9,8 @@ SetWorkingDir A_ScriptDir
 
 global LayerDir := A_WorkingDir . "\layers\"
 
-#include %A_WorkingDir%\json-read-write.ahk
-#include %A_WorkingDir%\layer.ahk
+#include %A_WorkingDir%\midi-scripts\json-read-write.ahk
+#include %A_WorkingDir%\midi-scripts\layer.ahk
 
 global layer_to_edit
 global mid_edit
@@ -54,6 +54,7 @@ Constructor()
 	global RightClickMenu := Menu()
 	global listview_row_value := 0
 	global keyTypeMenu := Menu()
+
 	keyTypeMenu.Add("Standard key",standard_Hotkey)
 
 	RightClickMenu.Add("Add new hotkey",keyTypeMenu)
@@ -72,6 +73,8 @@ Constructor()
 		RightClickMenu.Show(x,y)
 	}
 
+	myGui.SetFont("s12 Bold cYellow")
+	global layer_label := myGui.Add("Text", "x160 y337 w120 h23 +0x200 BackgroundTrans","Unselected")
 	return myGui
 }
 ;Context menu callback functions@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -108,7 +111,9 @@ rmHotkey(ItemName, ItemPos, MyMenu){
 	layer_to_edit.rmHotKey(row_data[1])
 
 	ListViewKeyHotkeyHotkeytypeSecondKey.Delete(listview_row_value)
-	writeLayer(layer_to_edit)
+
+	;directory := LayerDir . layer_to_edit.name . ".json"
+	writeLayer(layer_to_edit,LayerDir)
 }
 editHotkey(ItemName, ItemPos, MyMenu){
 	global listview_row_value
@@ -150,6 +155,8 @@ renderListViewGen(layer){
 			
 			ListViewKeyHotkeyHotkeytypeSecondKey.Add(,k,v.kHotKey,key_type,second_key)
 		}
+
+		layer_label.Text := layer_to_edit.name
 	}
 	return callback
 }
@@ -168,7 +175,9 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 			modifier_GUI.show("w220 h230")
 		}else{
 			layer_to_edit := LayerInstance("",objLayer_name.value,true,true)
-			writeLayer(layer_to_edit)
+
+			;directory := LayerDir . layer_to_edit.name . ".json"
+			writeLayer(layer_to_edit,LayerDir)
 			;
 			msgBox("add to midi layer")
 		}

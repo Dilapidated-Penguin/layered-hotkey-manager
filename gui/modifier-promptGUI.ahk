@@ -57,7 +57,7 @@ prompt_modifier_GUI(layer_name)
 		msgBox("modifier string: " . modifier_string . "`nRight click on the listview to add a new button `nNew Layer Instance created")
 		global layer_to_edit := LayerInstance(modifier_string,layer_name.value)
 		;msgBox(LightJson.Stringify(layer_to_edit,"	"))
-		writeLayer(layer_to_edit)
+		writeLayer(layer_to_edit,LayerDir)
 		global mid_edit := true
 		;Gotta get the layer menu to update when a new one is created
 

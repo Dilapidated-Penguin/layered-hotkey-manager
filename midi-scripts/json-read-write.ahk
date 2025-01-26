@@ -2,7 +2,7 @@
 #SingleInstance
 #Warn All, Off
 
-#include %A_ScriptDir%\layer.ahk
+#include layer.ahk
 
 ;JSON parsing code by
 class LightJson
@@ -84,9 +84,9 @@ readLayer(dir){
     return result
 }
 
-writeLayer(LayerInput){
+writeLayer(LayerInput,layer_dir){
     output := LightJson.Stringify(LayerInput, '    ')
-    outputDir := LayerDir
+    outputDir := layer_dir
     if(!DirExist(outputDir)){
         DirCreate(outputDir)
     }

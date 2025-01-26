@@ -68,7 +68,7 @@ hotkey_select_constr(default_key := "",default_hotkey := "", default_layered_sta
 			global layer_to_edit
 
 			layer_to_edit.addHotKey(submitted_hotkey.key, submitted_hotkey.hotkey,options)
-			writeLayer(layer_to_edit)
+			writeLayer(layer_to_edit,LayerDir)
 			myGUI.Destroy()
 		}else{
 			msgBox("Invalid Key")
