@@ -14,6 +14,7 @@ global LayerDir := A_WorkingDir . "\layers\"
 
 global layer_to_edit
 global mid_edit
+global previously_checked := ""
 
 ;GUI pages
 #include %A_WorkingDir%\gui\Layer-toggleGUI.ahk
@@ -126,7 +127,7 @@ editHotkey(ItemName, ItemPos, MyMenu){
 renderLayerMenu(){
     layerMenu := Menu()
 	layerMenu.Add()
-	seperator_location := 1
+	global seperator_location := 1
     Loop Files, LayerDir . "*.json"{
 		layer := readLayer(A_LoopFilePath)
 		callback := renderListViewGen(layer)
@@ -155,8 +156,16 @@ renderListViewGen(layer){
 			
 			ListViewKeyHotkeyHotkeytypeSecondKey.Add(,k,v.kHotKey,key_type,second_key)
 		}
+		;check the correct layer entry:
+		global previously_checked
+		if(previously_checked != ""){
+			ExistingLayerMenu.UnCheck(previously_checked)
+		}
+		ExistingLayerMenu.Check(layer.name)
+		previously_checked := layer.name
 
-		layer_label.Text := layer_to_edit.name
+		;Change layer labal
+		layer_label.Text := layer.name
 	}
 	return callback
 }
@@ -173,13 +182,15 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 		if(!isMidiLayer){
 			modifier_GUI := prompt_modifier_GUI(objLayer_name)
 			modifier_GUI.show("w220 h230")
+
 		}else{
 			layer_to_edit := LayerInstance("",objLayer_name.value,true,true)
-
-			;directory := LayerDir . layer_to_edit.name . ".json"
 			writeLayer(layer_to_edit,LayerDir)
-			;
 			msgBox("add to midi layer")
+			
+			;Add to ExistingLayerMenu:
+			callback := renderListViewGen(layer_to_edit)
+			ExistingLayerMenu.Add(layer_to_edit.name, callback)
 		}
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}

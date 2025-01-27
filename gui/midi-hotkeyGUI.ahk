@@ -19,8 +19,7 @@ midi_hotkeyGUI()
 
         RunWait("`"midi-functionality.ahk`"", A_WorkingDir)
 
-        callback := renderListViewGen(layer_to_edit)
-        callback()
+
         myGUI.Destroy()
     }
 

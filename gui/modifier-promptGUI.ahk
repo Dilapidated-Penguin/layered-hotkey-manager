@@ -61,11 +61,13 @@ prompt_modifier_GUI(layer_name)
 		global mid_edit := true
 		;Gotta get the layer menu to update when a new one is created
 
-
-		;callback := renderListViewGen(layer_to_edit)
-		;global layerMenu
-		;layerMenu.Add(layer_name, callback)
-		;Main_Gui.Show("w280 h360")
+		;Add to ExistingLayerMenu:
+		global ExistingLayerMenu
+        global seperator_location
+    
+        callback := renderListViewGen(layer_to_edit)
+        layerMenu.Insert(seperator_location . "&", layer_to_edit.name,callback)
+        seperator_location++
 	}
 	radio_update(radio_button_clicked,*)
 	{
