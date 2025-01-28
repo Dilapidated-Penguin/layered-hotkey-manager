@@ -1,4 +1,6 @@
-# Keyboard layers
+# Layered-Hotkey Manager
+This project provides a rudimentary interface for creating and managing layers of hotkeys accessed using different combinations of the keyboard modifiers. In the same way the Ctrl modifier changes the function of A, with Ctrl + A being 'select all', this projects aims to allow user to, using a combinations of the modifiers keys create keyboard layers of functionality.
+
 This is a project written in ahk for the purpose of providing general hotkey and keyboard layering functionality.
 - Code for converting ahk map to and from json file format by teadrinker:
 https://www.autohotkey.com/boards/viewtopic.php?t=121553

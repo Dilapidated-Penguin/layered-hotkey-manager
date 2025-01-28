@@ -59,15 +59,18 @@ prompt_modifier_GUI(layer_name)
 		;msgBox(LightJson.Stringify(layer_to_edit,"	"))
 		writeLayer(layer_to_edit,LayerDir)
 		global mid_edit := true
-		;Gotta get the layer menu to update when a new one is created
 
 		;Add to ExistingLayerMenu:
 		global ExistingLayerMenu
         global seperator_location
     
         callback := renderListViewGen(layer_to_edit)
-        layerMenu.Insert(seperator_location . "&", layer_to_edit.name,callback)
+        ExistingLayerMenu.Insert(seperator_location . "&", layer_to_edit.name,callback)
         seperator_location++
+
+		;update LayerCheck
+		updateLayerMenuCheck(layer_to_edit.name)
+		
 	}
 	radio_update(radio_button_clicked,*)
 	{

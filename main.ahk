@@ -155,21 +155,24 @@ renderListViewGen(layer){
 			second_key := v.options.stacked_key ? v.options.second_key : "N/A"
 			
 			ListViewKeyHotkeyHotkeytypeSecondKey.Add(,k,v.kHotKey,key_type,second_key)
+		
 		}
 		;check the correct layer entry:
-		global previously_checked
-		if(previously_checked != ""){
-			ExistingLayerMenu.UnCheck(previously_checked)
-		}
-		ExistingLayerMenu.Check(layer.name)
-		previously_checked := layer.name
-
-		;Change layer labal
-		layer_label.Text := layer.name
+		updateLayerMenuCheck(layer.name)
 	}
 	return callback
 }
+updateLayerMenuCheck(layer_name){
+	global previously_checked
+	if(previously_checked != ""){
+		ExistingLayerMenu.UnCheck(previously_checked)
+	}
+	ExistingLayerMenu.Check(layer_name)
+	previously_checked := layer_name
 
+	;Change layer labal
+	layer_label.Text := layer_name
+}
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 CreateCallback(ItemName, ItemPos, MyMenu){
 	isMidiLayer := (ItemName = "Create new MIDI layer")
@@ -189,8 +192,12 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 			msgBox("add to midi layer")
 			
 			;Add to ExistingLayerMenu:
+			global ExistingLayerMenu
 			callback := renderListViewGen(layer_to_edit)
 			ExistingLayerMenu.Add(layer_to_edit.name, callback)
+
+			;update LayerCheck:
+			updateLayerMenuCheck(layer_to_edit.name)
 		}
 		ListViewKeyHotkeyHotkeytypeSecondKey.Delete()
 	}
