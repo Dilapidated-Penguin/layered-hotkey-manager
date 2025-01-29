@@ -195,7 +195,8 @@ CreateCallback(ItemName, ItemPos, MyMenu){
 			global ExistingLayerMenu
 			callback := renderListViewGen(layer_to_edit)
 			ExistingLayerMenu.Add(layer_to_edit.name, callback)
-
+			
+			callback()
 			;update LayerCheck:
 			updateLayerMenuCheck(layer_to_edit.name)
 		}

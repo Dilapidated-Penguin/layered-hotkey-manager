@@ -70,7 +70,9 @@ prompt_modifier_GUI(layer_name)
 
 		;update LayerCheck
 		updateLayerMenuCheck(layer_to_edit.name)
-		
+		;Render layer:
+		callback()
+
 	}
 	radio_update(radio_button_clicked,*)
 	{
