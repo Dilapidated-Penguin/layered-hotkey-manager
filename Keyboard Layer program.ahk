@@ -7,10 +7,9 @@
 global LayerDir := A_ScriptDir . "\layers\"
 global long_key_pressed := false
 
-#include %A_ScriptDir%\json-read-write.ahk
-#include %A_ScriptDir%\layer.ahk
+#include %A_ScriptDir%\midi-scripts\json-read-write.ahk
+#include %A_ScriptDir%\midi-scripts\layer.ahk
 ;*******************
-
 ;Loop through folder and seetup the hotkeys based on if the layers are active
 ;options format
 ;{
@@ -21,8 +20,7 @@ ActivateLayers(){
     Loop Files, LayerDir . "*.json"{
         currentLayer := readLayer(A_LoopFilePath)
         if(currentLayer.Active){
-            
-            for k,v in currentLayer.HotkeyRelation.OwnProps(){
+            for k,v in currentLayer.HotkeyRelation{
 
                 keyNameConc := currentLayer.kModifier . k
                 callback := callbackGen(v)
@@ -88,5 +86,6 @@ update.addHotKey('z','x',{
     stacked_key : true,
     second_key : 'u'
 })
-writeLayer(update)
+
+writeLayer(update,LayerDir)
 ActivateLayers()

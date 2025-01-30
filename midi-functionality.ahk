@@ -15,13 +15,14 @@
 SetTitleMatchMode, 2
 SendMode Input              	; Recommended for new scripts due to its superior speed and reliability.
 ; =============== 
-version = XTouchOne2DaVinciResolve
+version = XMidiPorts
 ; =============== 
 readini()					            ; load midi port from .ini file 
 gosub, MidiPortRefresh        ; used to refresh the input and output port lists - see label below 
 port_test(numports)   		    ; test the ports - check for valid ports?
 gosub, midiin_go              ; opens the midi input port listening routine
-gosub, midiMon           	    ; see below - a midi monitor gui - for learning mostly - comment this line eventually.
+; see below - a midi monitor gui - for learning mostly - comment this line eventually.
+gosub, midiMon           	    
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ; MidiMsgDetect is called each time a MIDI message is received.
@@ -47,19 +48,33 @@ MidiMsgDetect(hInput, midiMsg, wMsg)
 	EnvSet, "NOTE_NUMBER", %data1%
 	EnvSet, "NOTE_VELOCITY", %data2%
 
+	msgbox, %chan%
 	switch (flag){
 		case "r":
 			dir .= "run-midi.ahk"""
 		case "w":
 			dir .= "prog-midi.ahk"""
 			if(%data1% != 0){
+				Msgbox, %data1%
 				RunWait, %dir%
 				ExitApp
 			}
 		case "rm":
 			dir .=	"prog-midi.ahk"""
 	}
-	;this function is ran when the user presses
+
+	if statusbyte between 128 and 143 ; MIDI NoteOff
+		{
+		  stb := "NoteOff"
+		}
+	  if statusbyte between 192 and 208 ; MIDI Program Change
+		{
+		  stb := "PC"
+		}
+	  if statusbyte between 224 and 254 ; MIDI Pitch Bend
+		{
+		  stb := "PitchB"
+		}
 } 
 return
 
