@@ -1,5 +1,7 @@
 <h3 align="center">Layered-Hotkey Manager</h3>
 
+[![License: MIT](https://cdn.prod.website-files.com/5e0f1144930a8bc8aace526c/65dd9eb5aaca434fac4f1c34_License-MIT-blue.svg)](/LICENSE)
+
 ## About this project:
 
 This project provides a rudimentary interface for creating and managing layers of hotkeys accessed using different combinations of the keyboard modifiers. Just as the Ctrl modifier changes the function of a given key to a shortcut funcitonality, this projects aims to allow user to, using a combinations of the modifiers keys create custom keyboard layers of shortcuts.
