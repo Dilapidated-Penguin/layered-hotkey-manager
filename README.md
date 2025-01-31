@@ -3,6 +3,8 @@
 ## About this project:
 
 This project provides a rudimentary interface for creating and managing layers of hotkeys accessed using different combinations of the keyboard modifiers. Just as the Ctrl modifier changes the function of a given key to a shortcut funcitonality, this projects aims to allow user to, using a combinations of the modifiers keys create custom keyboard layers of shortcuts.
+
+
 ![AHK logo][logo_ahk]
 ##### Midi Device functionality
 To provide additional hotkey utility the project also allows for the assigning of shortcuts to a midi device
